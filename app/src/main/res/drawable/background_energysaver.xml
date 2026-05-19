@@ -1,0 +1,15 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Tło z obrazka -->
+    <item>
+        <bitmap
+            android:src="@drawable/literaki_plansza_energysaver"
+            android:tileMode="repeat"
+            android:gravity="top|left" />
+    </item>
+    <!-- Nakładka z przezroczystym tłem -->
+    <item android:bottom="8dp" android:left="8dp" android:right="8dp" android:top="8dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#80000000"/>
+        </shape>
+    </item>
+</layer-list>

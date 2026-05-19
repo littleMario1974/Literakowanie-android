@@ -1,0 +1,6 @@
+<!-- res/values/dimens.xml -->
+<resources>
+    <dimen name="close_button_top_margin">1dp</dimen>
+    <dimen name="margin_end">16dp</dimen>
+    <dimen name="margin_top">16dp</dimen>
+</resources>

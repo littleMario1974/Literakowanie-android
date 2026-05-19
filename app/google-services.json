@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "446169748206",
+    "project_id": "litera-6360d",
+    "storage_bucket": "litera-6360d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446169748206:android:aaf87db5db1c25f05499ff",
+        "android_client_info": {
+          "package_name": "com.littleMario.litera"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiZ9KaqZy9-Gw8VIe_r-JXJ7QM3itW4sQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
