@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Ustawienia bezpieczeństwa sieciowego -->
+
+    <!-- pozwala na normalne HTTPS + legacy strony -->
+    <base-config cleartextTrafficPermitted="true" />
+
+    <!-- (opcjonalnie, ale pomaga przy WebView + SJP / redirecty) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">sjp.pwn.pl</domain>
+    </domain-config>
+
 </network-security-config>
