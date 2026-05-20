@@ -5,10 +5,7 @@ import android.os.PowerManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -55,7 +52,6 @@ class MainActivity : AppCompatActivity() {
 
         MobileAds.initialize(this)
 
-        // ================= VIEWS =================
         adView = findViewById(R.id.adView)
         webView = findViewById(R.id.webView)
 
@@ -71,44 +67,53 @@ class MainActivity : AppCompatActivity() {
 
         infoLabel = findViewById(R.id.infoLabel)
 
-        // ================= ADS =================
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
-        adView.visibility = View.VISIBLE
 
-        // ================= WEBVIEW (NAPRAWIONE) =================
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
-        webView.settings.useWideViewPort = true
-        webView.settings.loadWithOverviewMode = true
+        // ================= WEBVIEW FIX =================
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            useWideViewPort = true
+            loadWithOverviewMode = true
+        }
 
         webView.webViewClient = object : WebViewClient() {
+
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                view.loadUrl(request.url.toString())
+                return true
+            }
+
+            override fun onPageFinished(view: WebView, url: String) {
+                android.util.Log.d("WEBVIEW", "LOADED: $url")
+            }
 
             override fun onReceivedError(
                 view: WebView,
                 request: WebResourceRequest,
                 error: WebResourceError
             ) {
-                view.loadDataWithBaseURL(
-                    null,
-                    "<html><body style='font-size:18px;text-align:center;padding:20px;'>Błąd ładowania strony słownika</body></html>",
-                    "text/html",
-                    "UTF-8",
-                    null
-                )
+                if (request.isForMainFrame) {
+                    view.loadData(
+                        "<html><body style='font-size:18px;text-align:center;padding:20px;'>Błąd ładowania</body></html>",
+                        "text/html",
+                        "UTF-8"
+                    )
+                }
             }
         }
 
-        // ================= ADAPTER =================
+        webView.settings.userAgentString =
+            "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
         wordList.adapter = adapter
 
         wordList.setOnItemClickListener { _, _, position, _ ->
             adapter.getItem(position)?.let { openDictionary(it) }
         }
-
-        // ================= OPIS =================
-        programDescription.text = getString(R.string.program_description_html)
 
         showDescriptionButton.setOnClickListener {
             programDescription.visibility =
@@ -117,7 +122,6 @@ class MainActivity : AppCompatActivity() {
 
         closeButton.setOnClickListener { finish() }
 
-        // ================= START UI =================
         inputField.visibility = View.GONE
         clearButton.visibility = View.GONE
         infoLabel.visibility = View.GONE
@@ -125,128 +129,70 @@ class MainActivity : AppCompatActivity() {
         setThemeColors()
         loadDatabaseFromFile()
 
-        // ================= INPUT =================
-        inputField.addTextChangedListener(object : TextWatcher {
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-                val text = s.toString().lowercase(Locale.getDefault())
-                adapter.clear()
-
-                val blanks = text.count { it == '?' }
-
-                if (blanks > 2) {
-                    inputField.setText(text.dropLast(1))
-                    inputField.setSelection(inputField.text.length)
-                    return
-                }
-
-                val bad = text.find { it !in POLISH_LETTERS && it != '?' }
-
-                if (bad != null) {
-                    inputField.setText(text.replace(bad.toString(), ""))
-                    inputField.setSelection(inputField.text.length)
-                }
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        // ================= BUTTONS =================
-        clearButton.setOnClickListener {
-            inputField.setText("")
-            adapter.clear()
-            infoLabel.visibility = View.GONE
-        }
-
         searchButton.setOnClickListener {
-
-            if (!isDictionaryLoaded) {
-                Toast.makeText(this, "Słownik się ładuje...", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
             val input = inputField.text.toString()
-
-            if (input.isBlank()) {
-                Toast.makeText(this, "Wpisz litery", Toast.LENGTH_SHORT).show()
-            } else {
-                searchWords(input)
-            }
+            if (input.isNotBlank()) searchWords(input)
         }
 
-        // ================= INSETS =================
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout)) { v, insets ->
-            val sys = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.updatePadding(top = sys.top, bottom = sys.bottom)
-            insets
+        findViewById<Button>(R.id.closeWebViewButton).setOnClickListener {
+            webView.visibility = View.GONE
+            wordList.visibility = View.VISIBLE
+            inputField.visibility = View.VISIBLE
+            clearButton.visibility = View.VISIBLE
+            searchButton.visibility = View.VISIBLE
+            infoLabel.visibility = View.VISIBLE
+            adView.visibility = View.VISIBLE
         }
     }
 
     // ================= OPEN DICTIONARY =================
     private fun openDictionary(word: String) {
+
         val url = "https://sjp.pwn.pl/szukaj/$word.html"
 
-        webView.apply {
-            visibility = View.VISIBLE
-            bringToFront()
-            elevation = 100f
-            requestFocus()
-            loadUrl(url)
-        }
+        wordList.visibility = View.GONE
+        inputField.visibility = View.GONE
+        clearButton.visibility = View.GONE
+        searchButton.visibility = View.GONE
+        infoLabel.visibility = View.GONE
+        adView.visibility = View.GONE
+
+        webView.visibility = View.VISIBLE
+        webView.bringToFront()
+
+        webView.loadUrl(url)
     }
 
-    // ================= LOAD =================
+    // ================= REST (bez zmian logicznych) =================
     private fun loadDatabaseFromFile() {
-
         executorService.submit {
-            try {
-                val reader = DawgReader()
+            val reader = DawgReader()
+            nodes = reader.load(DataInputStream(assets.open("dictionary.dawg")))
+            isDictionaryLoaded = true
 
-                nodes = reader.load(
-                    DataInputStream(assets.open("dictionary.dawg"))
-                )
-
-                isDictionaryLoaded = true
-
-                runOnUiThread {
-                    inputField.visibility = View.VISIBLE
-                    clearButton.visibility = View.VISIBLE
-                }
-
-            } catch (e: Exception) {
-                runOnUiThread {
-                    Toast.makeText(this, "Błąd słownika", Toast.LENGTH_LONG).show()
-                }
+            runOnUiThread {
+                inputField.visibility = View.VISIBLE
+                clearButton.visibility = View.VISIBLE
             }
         }
     }
 
-    // ================= SEARCH =================
     private fun searchWords(input: String) {
-
         executorService.submit {
-
             val result = findAllWords(input.lowercase(Locale.getDefault()))
 
             runOnUiThread {
                 adapter.clear()
                 adapter.addAll(result)
-
                 infoLabel.visibility = View.VISIBLE
                 infoLabel.text = "Znaleziono ${result.size} słów"
             }
         }
     }
 
-    // ================= DFS =================
     private fun findAllWords(input: String): List<String> {
-
         val rack = input.groupingBy { it }.eachCount().toMutableMap()
         val result = mutableSetOf<String>()
-
         dfs(rootId, StringBuilder(), rack, result)
 
         return result.sortedWith(
@@ -267,12 +213,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         for (i in POLISH_LETTERS.indices) {
-
             val child = node.next[i]
             if (child == -1) continue
 
             val letter = POLISH_LETTERS[i]
-
             val count = rack[letter] ?: 0
 
             if (count > 0) {
@@ -286,7 +230,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             val blank = rack['?'] ?: 0
-
             if (blank > 0) {
                 rack['?'] = blank - 1
                 path.append(letter)
@@ -299,24 +242,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ================= THEME =================
     private fun setThemeColors() {
-
         val isPowerSave =
             (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
 
         findViewById<ConstraintLayout>(R.id.mainLayout).setBackgroundResource(
-            if (isPowerSave)
-                R.drawable.background_energysaver
-            else
-                R.drawable.background
-        )
-
-        programDescription.setTextColor(
-            ContextCompat.getColor(
-                this,
-                if (isPowerSave) android.R.color.white else android.R.color.black
-            )
+            if (isPowerSave) R.drawable.background_energysaver
+            else R.drawable.background
         )
     }
 

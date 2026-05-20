@@ -125,7 +125,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
-        android:elevation="10dp"
+        android:elevation="100dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -139,7 +139,7 @@
         android:text="Zamknij"
         android:visibility="gone"
         android:layout_margin="8dp"
-        android:elevation="20dp"
+        android:elevation="60dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
