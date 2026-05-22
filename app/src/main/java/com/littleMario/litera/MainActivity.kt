@@ -21,6 +21,7 @@ import com.google.android.gms.ads.MobileAds
 import java.io.DataInputStream
 import java.util.*
 import java.util.concurrent.Executors
+import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,7 +35,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var clearButton: Button
     private lateinit var searchButton: Button
 
-    private lateinit var programDescription: TextView
     private lateinit var adView: AdView
     private lateinit var webView: WebView
     private lateinit var closeButton: ImageButton
@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity() {
         clearButton = findViewById(R.id.clearButton)
         searchButton = findViewById(R.id.searchButton)
 
-        programDescription = findViewById(R.id.programDescription)
 
         closeButton = findViewById(R.id.closeButton)
         showDescriptionButton = findViewById(R.id.showDescriptionButton)
@@ -138,16 +137,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ================= OPIS =================
 
-        showDescriptionButton.setOnClickListener {
-
-            programDescription.visibility =
-                if (programDescription.visibility == View.VISIBLE)
-                    View.GONE
-                else
-                    View.VISIBLE
-        }
 
         // ================= ZAMKNIJ APP =================
 
@@ -155,6 +145,18 @@ class MainActivity : AppCompatActivity() {
 
             finish()
         }
+
+        // ================= OPIS PROGRAMU =================
+
+        showDescriptionButton.setOnClickListener {
+
+            AlertDialog.Builder(this)
+                .setTitle("Opis programu")
+                .setMessage(getString(R.string.program_description_html))
+                .setPositiveButton("OK", null)
+                .show()
+        }
+
 
         // ================= START UI =================
 
