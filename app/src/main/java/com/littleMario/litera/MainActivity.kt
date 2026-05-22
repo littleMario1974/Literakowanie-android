@@ -5,8 +5,6 @@ import android.os.PowerManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.*
@@ -17,11 +15,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
 import java.io.DataInputStream
 import java.util.*
 import java.util.concurrent.Executors
-import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,11 +32,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var searchButton: Button
 
     private lateinit var adView: AdView
-    private lateinit var webView: WebView
+
     private lateinit var closeButton: ImageButton
     private lateinit var showDescriptionButton: Button
-    private lateinit var closeWebViewButton: Button
-
     private lateinit var infoLabel: TextView
 
     private var isDictionaryLoaded = false
@@ -53,11 +47,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        MobileAds.initialize(this)
-
         // ================= VIEWS =================
         adView = findViewById(R.id.adView)
-        webView = findViewById(R.id.webView)
 
         inputField = findViewById(R.id.inputField)
         wordList = findViewById(R.id.wordList)
@@ -67,8 +58,6 @@ class MainActivity : AppCompatActivity() {
 
         closeButton = findViewById(R.id.closeButton)
         showDescriptionButton = findViewById(R.id.showDescriptionButton)
-
-        closeWebViewButton = findViewById(R.id.closeWebViewButton)
 
         infoLabel = findViewById(R.id.infoLabel)
 
@@ -83,28 +72,15 @@ class MainActivity : AppCompatActivity() {
             adapter.getItem(position)?.let { openDictionary(it) }
         }
 
-        // ================= WEBVIEW =================
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
-        webView.settings.databaseEnabled = true
-        webView.settings.useWideViewPort = true
-        webView.settings.loadWithOverviewMode = true
-
-        webView.webViewClient = object : WebViewClient() {}
-
         // ================= BUTTONS =================
         closeButton.setOnClickListener { finish() }
 
         showDescriptionButton.setOnClickListener {
-            AlertDialog.Builder(this)
+            android.app.AlertDialog.Builder(this)
                 .setTitle("Opis programu")
                 .setMessage(getString(R.string.program_description_html))
                 .setPositiveButton("OK", null)
                 .show()
-        }
-
-        closeWebViewButton.setOnClickListener {
-            hideDictionaryMode()
         }
 
         clearButton.setOnClickListener {
@@ -114,7 +90,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchButton.setOnClickListener {
-
             if (!isDictionaryLoaded) {
                 Toast.makeText(this, "Słownik się ładuje...", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -158,9 +133,6 @@ class MainActivity : AppCompatActivity() {
         clearButton.visibility = View.GONE
         infoLabel.visibility = View.GONE
 
-        webView.visibility = View.GONE
-        closeWebViewButton.visibility = View.GONE
-
         setThemeColors()
         loadDatabaseFromFile()
 
@@ -169,58 +141,36 @@ class MainActivity : AppCompatActivity() {
             v.updatePadding(top = sys.top, bottom = sys.bottom)
             insets
         }
-
-
-
     }
 
-    // ================= DICTIONARY MODE =================
+    // ================= DICTIONARY (NOWE OKNO - STABILNE) =================
     private fun openDictionary(word: String) {
 
-        showDictionaryMode()
+        val webView = WebView(this)
+
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+        webView.settings.loadWithOverviewMode = true
+        webView.settings.useWideViewPort = true
+
+        webView.webViewClient = WebViewClient()
 
         webView.loadUrl("https://sjp.pl/$word")
-    }
 
-    private fun showDictionaryMode() {
-
-        wordList.visibility = View.GONE
-        inputField.visibility = View.GONE
-        clearButton.visibility = View.GONE
-        searchButton.visibility = View.GONE
-        infoLabel.visibility = View.GONE
-        adView.visibility = View.GONE
-
-        webView.visibility = View.VISIBLE
-        closeWebViewButton.visibility = View.VISIBLE
-
-        webView.bringToFront()
-        closeWebViewButton.bringToFront()
-    }
-
-    private fun hideDictionaryMode() {
-
-        webView.visibility = View.GONE
-        closeWebViewButton.visibility = View.GONE
-
-        wordList.visibility = View.VISIBLE
-        inputField.visibility = View.VISIBLE
-        clearButton.visibility = View.VISIBLE
-        searchButton.visibility = View.VISIBLE
-        adView.visibility = View.VISIBLE
-
-        if (adapter.count > 0) {
-            infoLabel.visibility = View.VISIBLE
-        }
+        android.app.AlertDialog.Builder(this)
+            .setView(webView)
+            .setPositiveButton("Zamknij") { dialog, _ ->
+                webView.stopLoading()
+                dialog.dismiss()
+            }
+            .show()
     }
 
     // ================= LOAD =================
     private fun loadDatabaseFromFile() {
-
         executorService.submit {
             try {
                 val reader = DawgReader()
-
                 nodes = reader.load(DataInputStream(assets.open("dictionary.dawg")))
                 isDictionaryLoaded = true
 
@@ -274,7 +224,6 @@ class MainActivity : AppCompatActivity() {
         rack: MutableMap<Char, Int>,
         result: MutableSet<String>
     ) {
-
         val node = nodes[nodeId]
 
         if (node.terminal && path.length > 1) {
