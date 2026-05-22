@@ -210,18 +210,28 @@ class MainActivity : AppCompatActivity() {
 
         if (!::nodes.isInitialized) return emptyList()
 
-        val rack = input.groupingBy { it }.eachCount().toMutableMap()
+        val rack = IntArray(POLISH_LETTERS.length + 1)
+
+        for (c in input) {
+            if (c == '?') {
+                rack[POLISH_LETTERS.length]++
+            } else {
+                val idx = POLISH_LETTERS.indexOf(c)
+                if (idx != -1) rack[idx]++
+            }
+        }
+
         val result = mutableSetOf<String>()
 
-        dfs(rootId, StringBuilder(), rack, result)
+        dfsFast(rootId, StringBuilder(), rack, result)
 
         return result.sortedByDescending { it.length }
     }
 
-    private fun dfs(
+    private fun dfsFast(
         nodeId: Int,
         path: StringBuilder,
-        rack: MutableMap<Char, Int>,
+        rack: IntArray,
         result: MutableSet<String>
     ) {
         val node = nodes[nodeId]
@@ -230,6 +240,8 @@ class MainActivity : AppCompatActivity() {
             result.add(path.toString())
         }
 
+        val blankIndex = POLISH_LETTERS.length
+
         for (i in POLISH_LETTERS.indices) {
 
             val child = node.next[i]
@@ -237,29 +249,25 @@ class MainActivity : AppCompatActivity() {
 
             val letter = POLISH_LETTERS[i]
 
-            val count = rack[letter] ?: 0
-            val blankCount = rack['?'] ?: 0
+            val count = rack[i]
 
-            // normalne użycie litery
             if (count > 0) {
-                rack[letter] = count - 1
+                rack[i]--
                 path.append(letter)
 
-                dfs(child, path, rack, result)
+                dfsFast(child, path, rack, result)
 
                 path.deleteCharAt(path.length - 1)
-                rack[letter] = count
+                rack[i]++
             }
-
-            // ⭐ użycie blanku '?'
-            else if (blankCount > 0) {
-                rack['?'] = blankCount - 1
+            else if (rack[blankIndex] > 0) {
+                rack[blankIndex]--
                 path.append(letter)
 
-                dfs(child, path, rack, result)
+                dfsFast(child, path, rack, result)
 
                 path.deleteCharAt(path.length - 1)
-                rack['?'] = blankCount
+                rack[blankIndex]++
             }
         }
     }
