@@ -236,8 +236,11 @@ class MainActivity : AppCompatActivity() {
             if (child == -1) continue
 
             val letter = POLISH_LETTERS[i]
-            val count = rack[letter] ?: 0
 
+            val count = rack[letter] ?: 0
+            val blankCount = rack['?'] ?: 0
+
+            // normalne użycie litery
             if (count > 0) {
                 rack[letter] = count - 1
                 path.append(letter)
@@ -246,6 +249,17 @@ class MainActivity : AppCompatActivity() {
 
                 path.deleteCharAt(path.length - 1)
                 rack[letter] = count
+            }
+
+            // ⭐ użycie blanku '?'
+            else if (blankCount > 0) {
+                rack['?'] = blankCount - 1
+                path.append(letter)
+
+                dfs(child, path, rack, result)
+
+                path.deleteCharAt(path.length - 1)
+                rack['?'] = blankCount
             }
         }
     }
