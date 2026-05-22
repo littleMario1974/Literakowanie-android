@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var infoLabel: TextView
 
     private var isDictionaryLoaded = false
-
     private val executorService = Executors.newFixedThreadPool(4)
 
     private val POLISH_LETTERS =
@@ -57,7 +56,6 @@ class MainActivity : AppCompatActivity() {
         MobileAds.initialize(this)
 
         // ================= VIEWS =================
-
         adView = findViewById(R.id.adView)
         webView = findViewById(R.id.webView)
 
@@ -67,7 +65,6 @@ class MainActivity : AppCompatActivity() {
         clearButton = findViewById(R.id.clearButton)
         searchButton = findViewById(R.id.searchButton)
 
-
         closeButton = findViewById(R.id.closeButton)
         showDescriptionButton = findViewById(R.id.showDescriptionButton)
 
@@ -76,80 +73,29 @@ class MainActivity : AppCompatActivity() {
         infoLabel = findViewById(R.id.infoLabel)
 
         // ================= ADS =================
+        adView.loadAd(AdRequest.Builder().build())
 
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
+        // ================= LIST =================
+        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
+        wordList.adapter = adapter
+
+        wordList.setOnItemClickListener { _, _, position, _ ->
+            adapter.getItem(position)?.let { openDictionary(it) }
+        }
 
         // ================= WEBVIEW =================
-
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.databaseEnabled = true
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
 
-        webView.webViewClient = object : WebViewClient() {
+        webView.webViewClient = object : WebViewClient() {}
 
-            override fun onPageFinished(view: WebView, url: String) {
-                super.onPageFinished(view, url)
-
-                android.util.Log.d("WEBVIEW", "LOADED: $url")
-            }
-
-            override fun onReceivedError(
-                view: WebView,
-                request: WebResourceRequest,
-                error: WebResourceError
-            ) {
-
-                if (request.isForMainFrame) {
-
-                    view.loadData(
-                        """
-                        <html>
-                        <body style='font-size:18px;text-align:center;padding:20px;'>
-                        Błąd ładowania słownika
-                        </body>
-                        </html>
-                        """.trimIndent(),
-                        "text/html",
-                        "UTF-8"
-                    )
-                }
-            }
-        }
-
-        // ================= LISTA =================
-
-        adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_list_item_1,
-            mutableListOf()
-        )
-
-        wordList.adapter = adapter
-
-        wordList.setOnItemClickListener { _, _, position, _ ->
-
-            adapter.getItem(position)?.let {
-
-                openDictionary(it)
-            }
-        }
-
-
-
-        // ================= ZAMKNIJ APP =================
-
-        closeButton.setOnClickListener {
-
-            finish()
-        }
-
-        // ================= OPIS PROGRAMU =================
+        // ================= BUTTONS =================
+        closeButton.setOnClickListener { finish() }
 
         showDescriptionButton.setOnClickListener {
-
             AlertDialog.Builder(this)
                 .setTitle("Opis programu")
                 .setMessage(getString(R.string.program_description_html))
@@ -157,63 +103,49 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
+        closeWebViewButton.setOnClickListener {
+            hideDictionaryMode()
+        }
 
-        // ================= START UI =================
+        clearButton.setOnClickListener {
+            inputField.setText("")
+            adapter.clear()
+            infoLabel.visibility = View.GONE
+        }
 
-        inputField.visibility = View.GONE
-        clearButton.visibility = View.GONE
-        infoLabel.visibility = View.GONE
+        searchButton.setOnClickListener {
 
-        setThemeColors()
-
-        loadDatabaseFromFile()
-
-        // ================= INPUT =================
-
-        inputField.addTextChangedListener(object : TextWatcher {
-
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
+            if (!isDictionaryLoaded) {
+                Toast.makeText(this, "Słownik się ładuje...", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int
-            ) {
+            val input = inputField.text.toString()
 
-                val text =
-                    s.toString().lowercase(Locale.getDefault())
+            if (input.isBlank()) {
+                Toast.makeText(this, "Wpisz litery", Toast.LENGTH_SHORT).show()
+            } else {
+                searchWords(input)
+            }
+        }
 
-                adapter.clear()
+        // ================= INPUT =================
+        inputField.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                val blanks =
-                    text.count { it == '?' }
+                val text = s.toString().lowercase(Locale.getDefault())
 
+                val blanks = text.count { it == '?' }
                 if (blanks > 2) {
-
                     inputField.setText(text.dropLast(1))
                     inputField.setSelection(inputField.text.length)
-
                     return
                 }
 
-                val bad =
-                    text.find {
-                        it !in POLISH_LETTERS && it != '?'
-                    }
-
+                val bad = text.find { it !in POLISH_LETTERS && it != '?' }
                 if (bad != null) {
-
-                    inputField.setText(
-                        text.replace(bad.toString(), "")
-                    )
-
+                    inputField.setText(text.replace(bad.toString(), ""))
                     inputField.setSelection(inputField.text.length)
                 }
             }
@@ -221,88 +153,36 @@ class MainActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // ================= BUTTONS =================
+        // ================= INIT =================
+        inputField.visibility = View.GONE
+        clearButton.visibility = View.GONE
+        infoLabel.visibility = View.GONE
 
-        clearButton.setOnClickListener {
+        webView.visibility = View.GONE
+        closeWebViewButton.visibility = View.GONE
 
-            inputField.setText("")
+        setThemeColors()
+        loadDatabaseFromFile()
 
-            adapter.clear()
-
-            infoLabel.visibility = View.GONE
-        }
-
-        searchButton.setOnClickListener {
-
-            if (!isDictionaryLoaded) {
-
-                Toast.makeText(
-                    this,
-                    "Słownik się ładuje...",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                return@setOnClickListener
-            }
-
-            val input =
-                inputField.text.toString()
-
-            if (input.isBlank()) {
-
-                Toast.makeText(
-                    this,
-                    "Wpisz litery",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-            } else {
-
-                searchWords(input)
-            }
-        }
-
-        // ================= CLOSE WEBVIEW =================
-
-        findViewById<Button>(R.id.closeWebViewButton).setOnClickListener {
-
-            webView.visibility = View.GONE
-            findViewById<Button>(R.id.closeWebViewButton).visibility = View.GONE
-
-            wordList.visibility = View.VISIBLE
-            inputField.visibility = View.VISIBLE
-            clearButton.visibility = View.VISIBLE
-            searchButton.visibility = View.VISIBLE
-            adView.visibility = View.VISIBLE
-
-            if (adapter.count > 0) {
-                infoLabel.visibility = View.VISIBLE
-            }
-        }
-
-        // ================= INSETS =================
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-            findViewById(R.id.mainLayout)
-        ) { v, insets ->
-
-            val sys =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            v.updatePadding(
-                top = sys.top,
-                bottom = sys.bottom
-            )
-
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout)) { v, insets ->
+            val sys = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(top = sys.top, bottom = sys.bottom)
             insets
         }
+
+
+
     }
 
-    // ================= OPEN DICTIONARY =================
-
+    // ================= DICTIONARY MODE =================
     private fun openDictionary(word: String) {
 
-        val url = "https://sjp.pl/$word"
+        showDictionaryMode()
+
+        webView.loadUrl("https://sjp.pl/$word")
+    }
+
+    private fun showDictionaryMode() {
 
         wordList.visibility = View.GONE
         inputField.visibility = View.GONE
@@ -312,100 +192,80 @@ class MainActivity : AppCompatActivity() {
         adView.visibility = View.GONE
 
         webView.visibility = View.VISIBLE
-
         closeWebViewButton.visibility = View.VISIBLE
 
         webView.bringToFront()
         closeWebViewButton.bringToFront()
-
-        webView.loadUrl(url)
     }
-    // ================= LOAD DATABASE =================
 
+    private fun hideDictionaryMode() {
+
+        webView.visibility = View.GONE
+        closeWebViewButton.visibility = View.GONE
+
+        wordList.visibility = View.VISIBLE
+        inputField.visibility = View.VISIBLE
+        clearButton.visibility = View.VISIBLE
+        searchButton.visibility = View.VISIBLE
+        adView.visibility = View.VISIBLE
+
+        if (adapter.count > 0) {
+            infoLabel.visibility = View.VISIBLE
+        }
+    }
+
+    // ================= LOAD =================
     private fun loadDatabaseFromFile() {
 
         executorService.submit {
-
             try {
-
                 val reader = DawgReader()
 
-                nodes = reader.load(
-                    DataInputStream(
-                        assets.open("dictionary.dawg")
-                    )
-                )
-
+                nodes = reader.load(DataInputStream(assets.open("dictionary.dawg")))
                 isDictionaryLoaded = true
 
                 runOnUiThread {
-
                     inputField.visibility = View.VISIBLE
                     clearButton.visibility = View.VISIBLE
+                    searchButton.isEnabled = true
                 }
 
             } catch (e: Exception) {
-
                 runOnUiThread {
-
-                    Toast.makeText(
-                        this,
-                        "Błąd słownika",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this, "Błąd słownika", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
     // ================= SEARCH =================
-
     private fun searchWords(input: String) {
 
         executorService.submit {
 
-            val result =
-                findAllWords(
-                    input.lowercase(Locale.getDefault())
-                )
+            val result = findAllWords(input.lowercase(Locale.getDefault()))
 
             runOnUiThread {
-
                 adapter.clear()
-
                 adapter.addAll(result)
 
                 infoLabel.visibility = View.VISIBLE
-
-                infoLabel.text =
-                    "Znaleziono ${result.size} słów"
+                infoLabel.text = "Znaleziono ${result.size} słów"
             }
         }
     }
 
-    // ================= FIND WORDS =================
-
+    // ================= DFS =================
     private fun findAllWords(input: String): List<String> {
 
-        val rack =
-            input.groupingBy { it }
-                .eachCount()
-                .toMutableMap()
+        if (!::nodes.isInitialized) return emptyList()
 
-        val result =
-            mutableSetOf<String>()
+        val rack = input.groupingBy { it }.eachCount().toMutableMap()
+        val result = mutableSetOf<String>()
 
-        dfs(
-            rootId,
-            StringBuilder(),
-            rack,
-            result
-        )
+        dfs(rootId, StringBuilder(), rack, result)
 
-        return result.sortedWith(
-            compareByDescending<String> { it.length }
-                .thenBy { it }
-        )
+        return result.sortedByDescending { it.length }
     }
 
     private fun dfs(
@@ -418,76 +278,37 @@ class MainActivity : AppCompatActivity() {
         val node = nodes[nodeId]
 
         if (node.terminal && path.length > 1) {
-
             result.add(path.toString())
         }
 
         for (i in POLISH_LETTERS.indices) {
 
-            val child =
-                node.next[i]
+            val child = node.next[i]
+            if (child == -1) continue
 
-            if (child == -1)
-                continue
-
-            val letter =
-                POLISH_LETTERS[i]
-
-            val count =
-                rack[letter] ?: 0
+            val letter = POLISH_LETTERS[i]
+            val count = rack[letter] ?: 0
 
             if (count > 0) {
-
                 rack[letter] = count - 1
-
                 path.append(letter)
 
-                dfs(
-                    child,
-                    path,
-                    rack,
-                    result
-                )
+                dfs(child, path, rack, result)
 
                 path.deleteCharAt(path.length - 1)
-
                 rack[letter] = count
-            }
-
-            val blank =
-                rack['?'] ?: 0
-
-            if (blank > 0) {
-
-                rack['?'] = blank - 1
-
-                path.append(letter)
-
-                dfs(
-                    child,
-                    path,
-                    rack,
-                    result
-                )
-
-                path.deleteCharAt(path.length - 1)
-
-                rack['?'] = blank
             }
         }
     }
 
     // ================= THEME =================
-
     private fun setThemeColors() {
 
         val isPowerSave =
-            (getSystemService(POWER_SERVICE) as PowerManager)
-                .isPowerSaveMode
+            (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
 
         findViewById<ConstraintLayout>(R.id.mainLayout)
             .setBackgroundResource(
-
                 if (isPowerSave)
                     R.drawable.background_energysaver
                 else
@@ -496,11 +317,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-
         super.onDestroy()
-
         executorService.shutdown()
-
         adView.destroy()
     }
 }
