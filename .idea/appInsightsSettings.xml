@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.littleMario.litera" />
+                  <option name="mobileSdkAppId" value="1:446169748206:android:aaf87db5db1c25f05499ff" />
+                  <option name="projectId" value="litera-6360d" />
+                  <option name="projectNumber" value="446169748206" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

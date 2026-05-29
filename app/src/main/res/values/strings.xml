@@ -5,15 +5,11 @@
     <string name="program_description_html"><![CDATA[
 LITERA to aplikacja do szybkiego wyszukiwania słów na podstawie liter, które wpiszesz.
 
-Wprowadź litery (opcjonalnie jedną spację), a program znajdzie słowa, które można z nich ułożyć.
-
-Użyj przycisku SZUKAJ, aby znaleźć słowa zawierające wszystkie litery.
+Wprowadź litery (opcjonalnie maksymalnie dwa znaki zapytania jako blanki), a program znajdzie słowa, które można z nich ułożyć.
 
 Przyciskiem SZUKAJ WSZYSTKIE znajdziesz wszystkie możliwe kombinacje.
 
-Spacja zastępuje dowolną literę alfabetu – to idealne narzędzie np. do gier słownych.
-
-Uwaga: duża liczba liter oraz użycie spacji może wydłużyć czas wyszukiwania, w zależności od wydajności urządzenia.
+Znak zapytania zastępuje dowolną literę alfabetu – to idealne narzędzie np. do gier słownych.
 
 Kontakt: mjk.byteforge@gmail.com
 Polityka prywatności: https://www.litera.com.pl/index.html

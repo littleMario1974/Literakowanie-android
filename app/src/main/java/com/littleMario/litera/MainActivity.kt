@@ -9,12 +9,12 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.*
 import java.io.DataInputStream
 import java.util.*
 import java.util.concurrent.Executors
@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var inputField: EditText
     private lateinit var wordList: ListView
+
     private lateinit var adapter: ArrayAdapter<String>
 
     private lateinit var clearButton: Button
@@ -47,9 +48,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // ================= VIEWS =================
-        adView = findViewById(R.id.adView)
+        // ================= ADS INIT =================
+        MobileAds.initialize(this) {}
 
+        val testDeviceIds = listOf("A791D9B6753D942BB05D366370ED876D")
+        val config = RequestConfiguration.Builder()
+            .setTestDeviceIds(testDeviceIds)
+            .build()
+        MobileAds.setRequestConfiguration(config)
+
+        // ================= UI =================
+        adView = findViewById(R.id.adView)
         inputField = findViewById(R.id.inputField)
         wordList = findViewById(R.id.wordList)
 
@@ -61,22 +70,33 @@ class MainActivity : AppCompatActivity() {
 
         infoLabel = findViewById(R.id.infoLabel)
 
-        // ================= ADS =================
-        adView.loadAd(AdRequest.Builder().build())
-
-        // ================= LIST =================
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
         wordList.adapter = adapter
 
         wordList.setOnItemClickListener { _, _, position, _ ->
-            adapter.getItem(position)?.let { openDictionary(it) }
+            val word = adapter.getItem(position)
+            if (word != null) openDictionary(word)
+        }
+
+        // ================= ADS LOAD =================
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+
+        adView.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                android.util.Log.d("ADS", "Ad loaded")
+            }
+
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                android.util.Log.e("ADS", "Failed: ${error.message}")
+            }
         }
 
         // ================= BUTTONS =================
         closeButton.setOnClickListener { finish() }
 
         showDescriptionButton.setOnClickListener {
-            android.app.AlertDialog.Builder(this)
+            AlertDialog.Builder(this)
                 .setTitle("Opis programu")
                 .setMessage(getString(R.string.program_description_html))
                 .setPositiveButton("OK", null)
@@ -90,13 +110,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchButton.setOnClickListener {
-            if (!isDictionaryLoaded) {
+            if (!isDictionaryLoaded || !::nodes.isInitialized) {
                 Toast.makeText(this, "Słownik się ładuje...", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val input = inputField.text.toString()
-
             if (input.isBlank()) {
                 Toast.makeText(this, "Wpisz litery", Toast.LENGTH_SHORT).show()
             } else {
@@ -104,11 +123,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ================= INPUT =================
         inputField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            override fun afterTextChanged(s: Editable?) {}
 
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val text = s.toString().lowercase(Locale.getDefault())
 
                 val blanks = text.count { it == '?' }
@@ -124,11 +143,8 @@ class MainActivity : AppCompatActivity() {
                     inputField.setSelection(inputField.text.length)
                 }
             }
-
-            override fun afterTextChanged(s: Editable?) {}
         })
 
-        // ================= INIT =================
         inputField.visibility = View.GONE
         clearButton.visibility = View.GONE
         infoLabel.visibility = View.GONE
@@ -143,24 +159,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ================= DICTIONARY (NOWE OKNO - STABILNE) =================
+    // ================= SEARCH =================
+    private fun searchWords(input: String) {
+        if (!isDictionaryLoaded || !::nodes.isInitialized) return
+
+        executorService.submit {
+            val result = findAllWords(input.lowercase(Locale.getDefault()))
+
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+
+                adapter.clear()
+                adapter.addAll(result)
+
+                infoLabel.visibility = View.VISIBLE
+                infoLabel.text = "Znaleziono ${result.size} słów"
+            }
+        }
+    }
+
+    // ================= OPEN DICTIONARY =================
     private fun openDictionary(word: String) {
 
-        val webView = WebView(this)
-
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
-        webView.settings.loadWithOverviewMode = true
-        webView.settings.useWideViewPort = true
-
-        webView.webViewClient = WebViewClient()
+        val webView = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.useWideViewPort = true
+            settings.loadWithOverviewMode = true
+            webViewClient = WebViewClient()
+        }
 
         webView.loadUrl("https://sjp.pl/$word")
 
-        android.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setView(webView)
             .setPositiveButton("Zamknij") { dialog, _ ->
-                webView.stopLoading()
+                webView.destroy()
                 dialog.dismiss()
             }
             .show()
@@ -168,6 +202,7 @@ class MainActivity : AppCompatActivity() {
 
     // ================= LOAD =================
     private fun loadDatabaseFromFile() {
+
         executorService.submit {
             try {
                 val reader = DawgReader()
@@ -175,6 +210,8 @@ class MainActivity : AppCompatActivity() {
                 isDictionaryLoaded = true
 
                 runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+
                     inputField.visibility = View.VISIBLE
                     clearButton.visibility = View.VISIBLE
                     searchButton.isEnabled = true
@@ -188,23 +225,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ================= SEARCH =================
-    private fun searchWords(input: String) {
-
-        executorService.submit {
-
-            val result = findAllWords(input.lowercase(Locale.getDefault()))
-
-            runOnUiThread {
-                adapter.clear()
-                adapter.addAll(result)
-
-                infoLabel.visibility = View.VISIBLE
-                infoLabel.text = "Znaleziono ${result.size} słów"
-            }
-        }
-    }
-
     // ================= DFS =================
     private fun findAllWords(input: String): List<String> {
 
@@ -213,16 +233,14 @@ class MainActivity : AppCompatActivity() {
         val rack = IntArray(POLISH_LETTERS.length + 1)
 
         for (c in input) {
-            if (c == '?') {
-                rack[POLISH_LETTERS.length]++
-            } else {
+            if (c == '?') rack[POLISH_LETTERS.length]++
+            else {
                 val idx = POLISH_LETTERS.indexOf(c)
                 if (idx != -1) rack[idx]++
             }
         }
 
         val result = mutableSetOf<String>()
-
         dfsFast(rootId, StringBuilder(), rack, result)
 
         return result.sortedByDescending { it.length }
@@ -249,9 +267,7 @@ class MainActivity : AppCompatActivity() {
 
             val letter = POLISH_LETTERS[i]
 
-            val count = rack[i]
-
-            if (count > 0) {
+            if (rack[i] > 0) {
                 rack[i]--
                 path.append(letter)
 
@@ -259,8 +275,7 @@ class MainActivity : AppCompatActivity() {
 
                 path.deleteCharAt(path.length - 1)
                 rack[i]++
-            }
-            else if (rack[blankIndex] > 0) {
+            } else if (rack[blankIndex] > 0) {
                 rack[blankIndex]--
                 path.append(letter)
 
@@ -274,7 +289,6 @@ class MainActivity : AppCompatActivity() {
 
     // ================= THEME =================
     private fun setThemeColors() {
-
         val isPowerSave =
             (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
 
