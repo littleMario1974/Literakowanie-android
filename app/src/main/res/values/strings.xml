@@ -3,13 +3,23 @@
     <string name="app_name">Litera</string>
 
     <string name="program_description_html"><![CDATA[
-LITERA to aplikacja do szybkiego wyszukiwania słów na podstawie liter, które wpiszesz.
+LITERA to aplikacja do szybkiego wyszukiwania słów na podstawie podanych liter.
 
-Wprowadź litery (opcjonalnie maksymalnie dwa znaki zapytania jako blanki), a program znajdzie słowa, które można z nich ułożyć.
+Wpisz dostępne litery (opcjonalnie możesz użyć maksymalnie dwóch znaków zapytania jako blanków), a aplikacja odnajdzie wszystkie słowa, które można z nich ułożyć.
 
-Przyciskiem SZUKAJ WSZYSTKIE znajdziesz wszystkie możliwe kombinacje.
+Po naciśnięciu przycisku SZUKAJ program wyświetli znalezione słowa wraz z ich liczbą. Każde słowo można również sprawdzić w słowniku języka polskiego.
 
-Znak zapytania zastępuje dowolną literę alfabetu – to idealne narzędzie np. do gier słownych.
+Znak zapytania (?) zastępuje dowolną literę alfabetu, dzięki czemu aplikacja doskonale sprawdza się podczas rozwiązywania krzyżówek, anagramów oraz gier słownych, takich jak Scrabble czy Literaki.
+
+Najważniejsze funkcje:
+
+szybkie wyszukiwanie słów z podanych liter,
+obsługa do dwóch blanków (znaków „?”),
+korzystanie z obszernego słownika języka polskiego,
+sortowanie wyników według długości słów,
+możliwość sprawdzenia znaczenia znalezionych słów w słowniku.
+
+LITERA to proste i wygodne narzędzie dla miłośników gier słownych, krzyżówek i zabaw językowych.
 
 Kontakt: mjk.byteforge@gmail.com
 Polityka prywatności: https://www.litera.com.pl/index.html
