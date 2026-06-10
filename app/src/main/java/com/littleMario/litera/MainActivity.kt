@@ -129,6 +129,12 @@ class MainActivity : AppCompatActivity() {
 
             adapter.clear()
             infoLabel.visibility = View.GONE
+
+            inputField.requestFocus()
+            inputField.setSelection(0, inputField.text.length)
+
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.showSoftInput(inputField, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
         }
 
         searchButton.setOnClickListener {

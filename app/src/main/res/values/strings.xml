@@ -3,69 +3,29 @@
     <string name="app_name">Litera</string>
 
     <string name="program_description_html"><![CDATA[
-OPIS PROGRAMU
-
-Aplikacja służy do wyszukiwania słów w słowniku na podstawie liter oraz filtrów.
+Aplikacja służy do wyszukiwania słów na podstawie liter i filtrów.
 
 WYSZUKIWANIE:
-W polu głównym wpisujesz litery.
-Litery muszą występować w słowie w dowolnej kolejności (system dopasowuje anagramy).
-Znak ? oznacza blank – dowolną literę.
-Możesz użyć maksymalnie 2 blanków.
+- ? = dowolna litera (blank)
+- maksymalnie 2 blanki
 
-Przykład:
-k??a
-→ znajdzie np. kana, kara, kawa (jeśli spełnia warunki słownika)
+PRZYKŁAD:
+k??a → kana, kawa, kara
 
 FILTRY:
+1. POCZĄTEK – słowo zaczyna się od wzorca
+b?t → bat, bit, bet
 
-1. POCZĄTEK (prefix)
-Słowo musi zaczynać się od podanego wzorca.
-Można używać ? jako dowolnej litery.
+2. ZAWIERA – fragment w dowolnym miejscu
+?na?e → kanarek (dopasowanie fragmentu)
 
-Przykład:
-b?t
-→ bat, bit, bet
+3. KONIEC – końcówka słowa
+?ka → paka, taka
 
-2. ZAWIERA (fragment)
-Wzorzec może wystąpić w dowolnym miejscu słowa.
-Znak ? oznacza dowolną literę.
-Dopasowanie działa jako fragment przesuwany po całym słowie.
-
-Przykład:
-?na?e
-→ kanarek (bo zawiera „anare”), banale, inne pasujące układy
-
-3. KONIEC (suffix)
-Słowo musi kończyć się podanym wzorcem.
-Można używać '?'.
-
-Przykład:
-?ka
-→ paka, buka, taka
-
-DŁUGOŚĆ SŁOWA:
-Możesz ustawić minimalną i maksymalną długość słowa.
-
-ZASADA DZIAŁANIA:
-Słowo musi spełniać:
-- warunki liter z pola głównego
-- wszystkie aktywne filtry
-- ograniczenia długości
-
-PRZYKŁAD KOMBINACJI:
-Pole główne:
-k??a
-
-Zawiera:
-?na?e
-
-Wynik:
-kanarek ✔ (jeśli spełnia długość i litery)
-kana ✔ (jeśli spełnia warunki)
+DŁUGOŚĆ:
+Ustaw minimalną i maksymalną długość słowa.
 
 Kontakt: mjk.byteforge@gmail.com
-Polityka prywatności: https://www.litera.com.pl/index.html
-    ]]></string>
+]]></string>
 </resources>
 
