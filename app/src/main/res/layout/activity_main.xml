@@ -9,7 +9,6 @@
     android:background="@drawable/background"
     android:fitsSystemWindows="true">
 
-    <!-- ================= MAIN SCREEN ================= -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/mainContainer"
         android:layout_width="0dp"
@@ -20,91 +19,171 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- TOP BAR -->
+
         <Button
             android:id="@+id/showDescriptionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Opis programu"
             android:layout_margin="8dp"
+            android:text="Opis programu"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/closeButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_margin="8dp"
-            android:src="@drawable/ic_close"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Zamknij"
+            android:src="@drawable/ic_close"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- INPUT -->
+        <!-- LITERY -->
+
         <EditText
             android:id="@+id/inputField"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Wpisz litery"
-            android:inputType="textNoSuggestions"
             android:layout_margin="16dp"
-            app:layout_constraintTop_toBottomOf="@id/showDescriptionButton"
+            android:hint="Litery, np. abcd??"
+            android:inputType="textNoSuggestions"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/showDescriptionButton" />
 
-        <!-- BUTTONS -->
+        <!-- POCZĄTEK -->
+
+        <EditText
+            android:id="@+id/startFilter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:hint="Początek, np. b?t"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/inputField" />
+
+        <!-- ZAWIERA -->
+
+        <EditText
+            android:id="@+id/containsFilter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:hint="Zawiera"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/startFilter" />
+
+        <!-- KONIEC -->
+
+        <EditText
+            android:id="@+id/endFilter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:hint="Koniec, np. t??"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/containsFilter" />
+
+        <!-- DŁUGOŚĆ -->
+
+        <LinearLayout
+            android:id="@+id/lengthRow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/endFilter">
+
+            <EditText
+                android:id="@+id/minLength"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Min"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/maxLength"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:hint="Max"
+                android:inputType="number" />
+        </LinearLayout>
+
+        <!-- PRZYCISKI -->
+
         <LinearLayout
             android:id="@+id/buttonRow"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_margin="16dp"
-            app:layout_constraintTop_toBottomOf="@id/inputField"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/lengthRow">
 
             <Button
                 android:id="@+id/clearButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Wyczyść"/>
+                android:text="Wyczyść" />
 
             <Button
                 android:id="@+id/searchButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="Szukaj"/>
+                android:layout_weight="1"
+                android:text="Szukaj" />
         </LinearLayout>
 
         <!-- INFO -->
+
         <TextView
             android:id="@+id/infoLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text=""
             android:gravity="center"
-            android:textColor="@android:color/holo_green_dark"
             android:padding="6dp"
+            android:text=""
+            android:textColor="@android:color/holo_green_dark"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/buttonRow"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/buttonRow" />
 
         <!-- LISTA -->
+
         <ListView
             android:id="@+id/wordList"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="12dp"
-            app:layout_constraintTop_toBottomOf="@id/infoLabel"
             app:layout_constraintBottom_toTopOf="@id/adView"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/infoLabel" />
 
         <!-- REKLAMA -->
+
         <com.google.android.gms.ads.AdView
             android:id="@+id/adView"
             android:layout_width="0dp"
@@ -112,41 +191,34 @@
             ads:adSize="BANNER"
             ads:adUnitId="ca-app-pub-5464929398169318/2442979592"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- ================= DICTIONARY SCREEN ================= -->
-        <!-- ================= DICTIONARY SCREEN ================= -->
+        <!-- WEBVIEW OVERLAY -->
         <FrameLayout
             android:id="@+id/webContainer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:visibility="gone"
-            android:background="@android:color/white"
-            android:fitsSystemWindows="true">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- WEBVIEW -->
             <WebView
                 android:id="@+id/webView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:overScrollMode="never"
-                android:background="@android:color/white" />
+                android:layout_height="match_parent" />
 
-            <!-- CLOSE BUTTON -->
             <Button
                 android:id="@+id/closeWebViewButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Zamknij słownik"
+                android:text="Zamknij"
                 android:layout_gravity="top|end"
-                android:layout_margin="12dp"
-                android:background="#CC000000"
-                android:textColor="@android:color/white"
-                android:padding="10dp"
-                android:elevation="10dp" />
+                android:layout_margin="12dp"/>
         </FrameLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var inputField: EditText
     private lateinit var wordList: ListView
-
     private lateinit var adapter: ArrayAdapter<String>
 
     private lateinit var clearButton: Button
@@ -38,26 +37,42 @@ class MainActivity : AppCompatActivity() {
     private lateinit var showDescriptionButton: Button
     private lateinit var infoLabel: TextView
 
+    private lateinit var startFilter: EditText
+    private lateinit var containsFilter: EditText
+    private lateinit var endFilter: EditText
+    private lateinit var minLengthField: EditText
+    private lateinit var maxLengthField: EditText
+
+    // WEBVIEW FIX
+    private lateinit var webView: WebView
+    private lateinit var webContainer: View
+
     private var isDictionaryLoaded = false
     private val executorService = Executors.newFixedThreadPool(4)
 
     private val POLISH_LETTERS =
         "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż"
 
+    // ================= FILTRY =================
+    private var startsWithPattern = ""
+    private var endsWithPattern = ""
+    private var containsPattern = ""
+
+    private var minLength = 2
+    private var maxLength = 50
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // ================= ADS INIT =================
         MobileAds.initialize(this) {}
 
-        val testDeviceIds = listOf("A791D9B6753D942BB05D366370ED876D")
         val config = RequestConfiguration.Builder()
-            .setTestDeviceIds(testDeviceIds)
+            .setTestDeviceIds(listOf("A791D9B6753D942BB05D366370ED876D"))
             .build()
         MobileAds.setRequestConfiguration(config)
 
-        // ================= UI =================
+        // UI
         adView = findViewById(R.id.adView)
         inputField = findViewById(R.id.inputField)
         wordList = findViewById(R.id.wordList)
@@ -70,29 +85,29 @@ class MainActivity : AppCompatActivity() {
 
         infoLabel = findViewById(R.id.infoLabel)
 
+        startFilter = findViewById(R.id.startFilter)
+        containsFilter = findViewById(R.id.containsFilter)
+        endFilter = findViewById(R.id.endFilter)
+        minLengthField = findViewById(R.id.minLength)
+        maxLengthField = findViewById(R.id.maxLength)
+
+        // WEBVIEW INIT (FIX OOM)
+        webContainer = findViewById(R.id.webContainer)
+        webView = findViewById(R.id.webView)
+
+        webView.settings.javaScriptEnabled = false
+        webView.settings.domStorageEnabled = false
+        webView.webViewClient = WebViewClient()
+
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
         wordList.adapter = adapter
 
         wordList.setOnItemClickListener { _, _, position, _ ->
-            val word = adapter.getItem(position)
-            if (word != null) openDictionary(word)
+            adapter.getItem(position)?.let { openDictionary(it) }
         }
 
-        // ================= ADS LOAD =================
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
+        adView.loadAd(AdRequest.Builder().build())
 
-        adView.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                android.util.Log.d("ADS", "Ad loaded")
-            }
-
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                android.util.Log.e("ADS", "Failed: ${error.message}")
-            }
-        }
-
-        // ================= BUTTONS =================
         closeButton.setOnClickListener { finish() }
 
         showDescriptionButton.setOnClickListener {
@@ -104,13 +119,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         clearButton.setOnClickListener {
+
             inputField.setText("")
+            startFilter.setText("")
+            containsFilter.setText("")
+            endFilter.setText("")
+            minLengthField.setText("")
+            maxLengthField.setText("")
+
             adapter.clear()
             infoLabel.visibility = View.GONE
         }
 
         searchButton.setOnClickListener {
-            if (!isDictionaryLoaded || !::nodes.isInitialized) {
+            if (!isDictionaryLoaded) {
                 Toast.makeText(this, "Słownik się ładuje...", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -161,13 +183,25 @@ class MainActivity : AppCompatActivity() {
 
     // ================= SEARCH =================
     private fun searchWords(input: String) {
-        if (!isDictionaryLoaded || !::nodes.isInitialized) return
+
+        startsWithPattern = startFilter.text.toString().trim().lowercase()
+        endsWithPattern = endFilter.text.toString().trim().lowercase()
+        containsPattern = containsFilter.text.toString().trim().lowercase()
+
+        minLength = minLengthField.text.toString().toIntOrNull() ?: 2
+        maxLength = maxLengthField.text.toString().toIntOrNull() ?: 50
+
+        if (minLength > maxLength) {
+            Toast.makeText(this, "Błąd długości", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         executorService.submit {
+
             val result = findAllWords(input.lowercase(Locale.getDefault()))
 
             runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
+                if (isFinishing) return@runOnUiThread
 
                 adapter.clear()
                 adapter.addAll(result)
@@ -178,31 +212,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ================= OPEN DICTIONARY =================
+    // ================= WEBVIEW FIX =================
     private fun openDictionary(word: String) {
-
-        val webView = WebView(this).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.useWideViewPort = true
-            settings.loadWithOverviewMode = true
-            webViewClient = WebViewClient()
-        }
-
+        webContainer.visibility = View.VISIBLE
         webView.loadUrl("https://sjp.pl/$word")
+    }
 
-        AlertDialog.Builder(this)
-            .setView(webView)
-            .setPositiveButton("Zamknij") { dialog, _ ->
-                webView.destroy()
-                dialog.dismiss()
-            }
-            .show()
+    private fun closeDictionary() {
+        webContainer.visibility = View.GONE
+        webView.loadUrl("about:blank")
     }
 
     // ================= LOAD =================
     private fun loadDatabaseFromFile() {
-
         executorService.submit {
             try {
                 val reader = DawgReader()
@@ -210,8 +232,6 @@ class MainActivity : AppCompatActivity() {
                 isDictionaryLoaded = true
 
                 runOnUiThread {
-                    if (isFinishing || isDestroyed) return@runOnUiThread
-
                     inputField.visibility = View.VISIBLE
                     clearButton.visibility = View.VISIBLE
                     searchButton.isEnabled = true
@@ -227,8 +247,6 @@ class MainActivity : AppCompatActivity() {
 
     // ================= DFS =================
     private fun findAllWords(input: String): List<String> {
-
-        if (!::nodes.isInitialized) return emptyList()
 
         val rack = IntArray(POLISH_LETTERS.length + 1)
 
@@ -254,8 +272,18 @@ class MainActivity : AppCompatActivity() {
     ) {
         val node = nodes[nodeId]
 
-        if (node.terminal && path.length > 1) {
-            result.add(path.toString())
+        // ❌ PRUNING: jeśli już za długie → stop
+        if (path.length > maxLength) return
+
+        // ✔ sprawdzenie słowa TYLKO gdy w zakresie
+        if (node.terminal) {
+            val len = path.length
+            if (len in minLength..maxLength) {
+                val word = path.toString()
+                if (matchesFilters(word)) {
+                    result.add(word)
+                }
+            }
         }
 
         val blankIndex = POLISH_LETTERS.length
@@ -265,9 +293,14 @@ class MainActivity : AppCompatActivity() {
             val child = node.next[i]
             if (child == -1) continue
 
+            val availableLetter = rack[i] > 0
+            val availableBlank = rack[blankIndex] > 0
+
+            if (!availableLetter && !availableBlank) continue
+
             val letter = POLISH_LETTERS[i]
 
-            if (rack[i] > 0) {
+            if (availableLetter) {
                 rack[i]--
                 path.append(letter)
 
@@ -275,7 +308,7 @@ class MainActivity : AppCompatActivity() {
 
                 path.deleteCharAt(path.length - 1)
                 rack[i]++
-            } else if (rack[blankIndex] > 0) {
+            } else {
                 rack[blankIndex]--
                 path.append(letter)
 
@@ -287,7 +320,58 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ================= THEME =================
+    // ================= FILTRY =================
+    private fun matchesFilters(word: String): Boolean {
+
+        if (word.length !in minLength..maxLength) return false
+
+        if (startsWithPattern.isNotEmpty())
+            if (!matchPattern(word, startsWithPattern, true)) return false
+
+        if (endsWithPattern.isNotEmpty())
+            if (!matchPattern(word, endsWithPattern, false)) return false
+
+        if (containsPattern.isNotEmpty())
+            if (!containsWildcardAnywhere(word, containsPattern)) return false
+
+        return true
+    }
+
+    private fun matchPattern(word: String, pattern: String, fromStart: Boolean): Boolean {
+        if (pattern.length > word.length) return false
+
+        val offset = if (fromStart) 0 else word.length - pattern.length
+
+        for (i in pattern.indices) {
+            val p = pattern[i]
+            val w = word[offset + i]
+            if (p != '?' && p != w) return false
+        }
+        return true
+    }
+
+    private fun containsWildcardAnywhere(word: String, pattern: String): Boolean {
+
+        if (pattern.length > word.length) return false
+
+        for (start in 0..word.length - pattern.length) {
+            var ok = true
+
+            for (i in pattern.indices) {
+                val p = pattern[i]
+                val w = word[start + i]
+
+                if (p != '?' && p != w) {
+                    ok = false
+                    break
+                }
+            }
+
+            if (ok) return true
+        }
+        return false
+    }
+
     private fun setThemeColors() {
         val isPowerSave =
             (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode

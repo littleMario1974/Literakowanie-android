@@ -3,23 +3,66 @@
     <string name="app_name">Litera</string>
 
     <string name="program_description_html"><![CDATA[
-LITERA to aplikacja do szybkiego wyszukiwania słów na podstawie podanych liter.
+OPIS PROGRAMU
 
-Wpisz dostępne litery (opcjonalnie możesz użyć maksymalnie dwóch znaków zapytania jako blanków), a aplikacja odnajdzie wszystkie słowa, które można z nich ułożyć.
+Aplikacja służy do wyszukiwania słów w słowniku na podstawie liter oraz filtrów.
 
-Po naciśnięciu przycisku SZUKAJ program wyświetli znalezione słowa wraz z ich liczbą. Każde słowo można również sprawdzić w słowniku języka polskiego.
+WYSZUKIWANIE:
+W polu głównym wpisujesz litery.
+Litery muszą występować w słowie w dowolnej kolejności (system dopasowuje anagramy).
+Znak ? oznacza blank – dowolną literę.
+Możesz użyć maksymalnie 2 blanków.
 
-Znak zapytania (?) zastępuje dowolną literę alfabetu, dzięki czemu aplikacja doskonale sprawdza się podczas rozwiązywania krzyżówek, anagramów oraz gier słownych, takich jak Scrabble czy Literaki.
+Przykład:
+k??a
+→ znajdzie np. kana, kara, kawa (jeśli spełnia warunki słownika)
 
-Najważniejsze funkcje:
+FILTRY:
 
-szybkie wyszukiwanie słów z podanych liter,
-obsługa do dwóch blanków (znaków „?”),
-korzystanie z obszernego słownika języka polskiego,
-sortowanie wyników według długości słów,
-możliwość sprawdzenia znaczenia znalezionych słów w słowniku.
+1. POCZĄTEK (prefix)
+Słowo musi zaczynać się od podanego wzorca.
+Można używać ? jako dowolnej litery.
 
-LITERA to proste i wygodne narzędzie dla miłośników gier słownych, krzyżówek i zabaw językowych.
+Przykład:
+b?t
+→ bat, bit, bet
+
+2. ZAWIERA (fragment)
+Wzorzec może wystąpić w dowolnym miejscu słowa.
+Znak ? oznacza dowolną literę.
+Dopasowanie działa jako fragment przesuwany po całym słowie.
+
+Przykład:
+?na?e
+→ kanarek (bo zawiera „anare”), banale, inne pasujące układy
+
+3. KONIEC (suffix)
+Słowo musi kończyć się podanym wzorcem.
+Można używać '?'.
+
+Przykład:
+?ka
+→ paka, buka, taka
+
+DŁUGOŚĆ SŁOWA:
+Możesz ustawić minimalną i maksymalną długość słowa.
+
+ZASADA DZIAŁANIA:
+Słowo musi spełniać:
+- warunki liter z pola głównego
+- wszystkie aktywne filtry
+- ograniczenia długości
+
+PRZYKŁAD KOMBINACJI:
+Pole główne:
+k??a
+
+Zawiera:
+?na?e
+
+Wynik:
+kanarek ✔ (jeśli spełnia długość i litery)
+kana ✔ (jeśli spełnia warunki)
 
 Kontakt: mjk.byteforge@gmail.com
 Polityka prywatności: https://www.litera.com.pl/index.html
