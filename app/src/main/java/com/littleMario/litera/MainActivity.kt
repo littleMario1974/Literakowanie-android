@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     // WEBVIEW FIX
     private lateinit var webView: WebView
     private lateinit var webContainer: View
+    private lateinit var closeWebViewButton: Button
 
     private var isDictionaryLoaded = false
     private val executorService = Executors.newFixedThreadPool(4)
@@ -94,10 +95,14 @@ class MainActivity : AppCompatActivity() {
         // WEBVIEW INIT (FIX OOM)
         webContainer = findViewById(R.id.webContainer)
         webView = findViewById(R.id.webView)
+        closeWebViewButton = findViewById(R.id.closeWebViewButton)
 
         webView.settings.javaScriptEnabled = false
         webView.settings.domStorageEnabled = false
         webView.webViewClient = WebViewClient()
+        closeWebViewButton.setOnClickListener {
+            closeDictionary()
+        }
 
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
         wordList.adapter = adapter
