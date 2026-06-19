@@ -77,8 +77,23 @@ class MainActivity : AppCompatActivity() {
         // UI
         adView = findViewById(R.id.adView)
         inputField = findViewById(R.id.inputField)
+        inputField.filters = arrayOf(
+            android.text.InputFilter { source, _, _, _, _, _ ->
+                val allowed = POLISH_LETTERS + "?"
+                if (source.all { it.lowercaseChar() in allowed }) {
+                    source
+                } else {
+                    ""
+                }
+            }
+        )
         inputField.inputType =
-            android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
+                    android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        inputField.isAllCaps = false
+        inputField.setSingleLine(true)
+
         wordList = findViewById(R.id.wordList)
 
         clearButton = findViewById(R.id.clearButton)
@@ -161,26 +176,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        inputField.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-                val text = s.toString().lowercase(Locale.getDefault())
-
-                val blanks = text.count { it == '?' }
-                if (blanks > 2) {
-                    Toast.makeText(this@MainActivity, "Max 2 znaki ?", Toast.LENGTH_SHORT).show()
-                }
-
-                val bad = text.find { it !in POLISH_LETTERS && it != '?' }
-                if (bad != null) {
-                    Toast.makeText(this@MainActivity, "Niedozwolony znak", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
 
         inputField.visibility = View.GONE
         clearButton.visibility = View.GONE
