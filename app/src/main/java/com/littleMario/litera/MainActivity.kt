@@ -42,11 +42,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var endFilter: EditText
     private lateinit var minLengthField: EditText
     private lateinit var maxLengthField: EditText
+    private lateinit var webProgress: ProgressBar
 
     // WEBVIEW FIX
     private lateinit var webView: WebView
     private lateinit var webContainer: View
-    private lateinit var closeWebViewButton: Button
+    private lateinit var closeWebViewButton: ImageButton
 
     private var isDictionaryLoaded = false
     private val executorService = Executors.newFixedThreadPool(4)
@@ -76,6 +77,8 @@ class MainActivity : AppCompatActivity() {
         // UI
         adView = findViewById(R.id.adView)
         inputField = findViewById(R.id.inputField)
+        inputField.inputType =
+            android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         wordList = findViewById(R.id.wordList)
 
         clearButton = findViewById(R.id.clearButton)
@@ -96,6 +99,8 @@ class MainActivity : AppCompatActivity() {
         webContainer = findViewById(R.id.webContainer)
         webView = findViewById(R.id.webView)
         closeWebViewButton = findViewById(R.id.closeWebViewButton)
+        webProgress = findViewById(R.id.webProgress)
+        webProgress.visibility = View.GONE
 
         webView.settings.javaScriptEnabled = false
         webView.settings.domStorageEnabled = false
@@ -158,22 +163,21 @@ class MainActivity : AppCompatActivity() {
 
         inputField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
             override fun afterTextChanged(s: Editable?) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
                 val text = s.toString().lowercase(Locale.getDefault())
 
                 val blanks = text.count { it == '?' }
                 if (blanks > 2) {
-                    inputField.setText(text.dropLast(1))
-                    inputField.setSelection(inputField.text.length)
-                    return
+                    Toast.makeText(this@MainActivity, "Max 2 znaki ?", Toast.LENGTH_SHORT).show()
                 }
 
                 val bad = text.find { it !in POLISH_LETTERS && it != '?' }
                 if (bad != null) {
-                    inputField.setText(text.replace(bad.toString(), ""))
-                    inputField.setSelection(inputField.text.length)
+                    Toast.makeText(this@MainActivity, "Niedozwolony znak", Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -225,13 +229,29 @@ class MainActivity : AppCompatActivity() {
 
     // ================= WEBVIEW FIX =================
     private fun openDictionary(word: String) {
+
+        // ukryj górne elementy UI
+        showDescriptionButton.visibility = View.GONE
+        closeButton.visibility = View.GONE
+
         webContainer.visibility = View.VISIBLE
         webView.loadUrl("https://sjp.pl/$word")
     }
 
     private fun closeDictionary() {
+
+        showDescriptionButton.visibility = View.VISIBLE
+        closeButton.visibility = View.VISIBLE
+
         webContainer.visibility = View.GONE
         webView.loadUrl("about:blank")
+    }
+    override fun onBackPressed() {
+        if (webContainer.visibility == View.VISIBLE) {
+            closeDictionary()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     // ================= LOAD =================
@@ -402,3 +422,4 @@ class MainActivity : AppCompatActivity() {
         adView.destroy()
     }
 }
+
