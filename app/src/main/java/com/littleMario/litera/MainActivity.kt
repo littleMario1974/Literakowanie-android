@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var minLengthField: EditText
     private lateinit var maxLengthField: EditText
     private lateinit var webProgress: ProgressBar
+    private var isEditing = false
 
     // WEBVIEW FIX
     private lateinit var webView: WebView
@@ -76,9 +77,15 @@ class MainActivity : AppCompatActivity() {
         inputField.filters = arrayOf(
             android.text.InputFilter { source, _, _, _, _, _ ->
                 val allowed = POLISH_LETTERS + "?"
+
                 if (source.all { it.lowercaseChar() in allowed }) {
                     source
                 } else {
+                    Toast.makeText(
+                        this,
+                        "Niedozwolony znak",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     ""
                 }
             }
@@ -90,6 +97,48 @@ class MainActivity : AppCompatActivity() {
         inputField.isAllCaps = false
         inputField.setSingleLine(true)
 
+        inputField.addTextChangedListener(object : TextWatcher {
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+                if (isEditing) return
+
+                val text = s.toString()
+
+                // 1. niedozwolony znak
+                val badChar = text.find { it.lowercaseChar() !in (POLISH_LETTERS + "?") }
+
+                if (badChar != null) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Niedozwolony znak",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
+                // 2. limit blanków
+                val blanks = text.count { it == '?' }
+
+                if (blanks > 2) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Maksymalnie 2 znaki ?",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    isEditing = true
+                    val corrected = text.substring(0, text.length - 1)
+                    inputField.setText(corrected)
+                    inputField.setSelection(corrected.length)
+                    isEditing = false
+                }
+            }
+        })
         wordList = findViewById(R.id.wordList)
 
         clearButton = findViewById(R.id.clearButton)
