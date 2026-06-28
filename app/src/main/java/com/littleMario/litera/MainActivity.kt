@@ -74,22 +74,7 @@ class MainActivity : AppCompatActivity() {
         // UI
         adView = findViewById(R.id.adView)
         inputField = findViewById(R.id.inputField)
-        inputField.filters = arrayOf(
-            android.text.InputFilter { source, _, _, _, _, _ ->
-                val allowed = POLISH_LETTERS + "?"
 
-                if (source.all { it.lowercaseChar() in allowed }) {
-                    source
-                } else {
-                    Toast.makeText(
-                        this,
-                        "Niedozwolony znak",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    ""
-                }
-            }
-        )
         inputField.inputType =
             android.text.InputType.TYPE_CLASS_TEXT or
                     android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
@@ -97,48 +82,7 @@ class MainActivity : AppCompatActivity() {
         inputField.isAllCaps = false
         inputField.setSingleLine(true)
 
-        inputField.addTextChangedListener(object : TextWatcher {
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-                if (isEditing) return
-
-                val text = s.toString()
-
-                // 1. niedozwolony znak
-                val badChar = text.find { it.lowercaseChar() !in (POLISH_LETTERS + "?") }
-
-                if (badChar != null) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Niedozwolony znak",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
-
-                // 2. limit blanków
-                val blanks = text.count { it == '?' }
-
-                if (blanks > 2) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Maksymalnie 2 znaki ?",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    isEditing = true
-                    val corrected = text.substring(0, text.length - 1)
-                    inputField.setText(corrected)
-                    inputField.setSelection(corrected.length)
-                    isEditing = false
-                }
-            }
-        })
         wordList = findViewById(R.id.wordList)
 
         clearButton = findViewById(R.id.clearButton)
@@ -154,6 +98,11 @@ class MainActivity : AppCompatActivity() {
         endFilter = findViewById(R.id.endFilter)
         minLengthField = findViewById(R.id.minLength)
         maxLengthField = findViewById(R.id.maxLength)
+
+        setupLetterFilter(inputField, maxBlanks = 2)
+        setupLetterFilter(startFilter)
+        setupLetterFilter(containsFilter)
+        setupLetterFilter(endFilter)
 
         // WEBVIEW INIT (FIX OOM)
         webContainer = findViewById(R.id.webContainer)
@@ -454,6 +403,68 @@ class MainActivity : AppCompatActivity() {
                 else
                     R.drawable.background
             )
+    }
+
+    private fun setupLetterFilter(editText: EditText, maxBlanks: Int = Int.MAX_VALUE) {
+
+        editText.filters = arrayOf(
+            android.text.InputFilter { source, _, _, _, _, _ ->
+                val allowed = POLISH_LETTERS + "?"
+
+                if (source.all { it.lowercaseChar() in allowed }) {
+                    source
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Niedozwolony znak",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    ""
+                }
+            }
+        )
+
+        editText.addTextChangedListener(object : TextWatcher {
+
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+
+                if (isEditing) return
+
+                val text = s.toString()
+
+                val blanks = text.count { it == '?' }
+
+                if (blanks > maxBlanks) {
+
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Maksymalnie $maxBlanks znaki ?",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    isEditing = true
+                    val corrected = text.dropLast(1)
+                    editText.setText(corrected)
+                    editText.setSelection(corrected.length)
+                    isEditing = false
+                }
+            }
+        })
     }
 
     override fun onDestroy() {
