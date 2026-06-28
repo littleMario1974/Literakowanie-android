@@ -3,6 +3,7 @@ package com.littleMario.litera
 import android.os.Bundle
 import android.os.PowerManager
 import android.text.Editable
+import android.text.SpannableString
 import android.text.TextWatcher
 import android.view.View
 import android.webkit.WebView
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var inputField: EditText
     private lateinit var wordList: ListView
-    private lateinit var adapter: ArrayAdapter<String>
+    private lateinit var adapter: ArrayAdapter<CharSequence>
 
     private lateinit var clearButton: Button
     private lateinit var searchButton: Button
@@ -122,7 +123,9 @@ class MainActivity : AppCompatActivity() {
         wordList.adapter = adapter
 
         wordList.setOnItemClickListener { _, _, position, _ ->
-            adapter.getItem(position)?.let { openDictionary(it) }
+            adapter.getItem(position)?.let { spannable ->
+                openDictionary(spannable.toString())
+            }
         }
 
         adView.loadAd(AdRequest.Builder().build())
@@ -207,8 +210,19 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
 
+                val rack = buildRack(input.lowercase(Locale.getDefault()))
+
+                val colored = result.map { word ->
+                    colorWordBlanks(word, rack)
+                }
+
                 adapter.clear()
-                adapter.addAll(result)
+
+                for (item in colored) {
+                    adapter.add(item)
+                }
+
+                adapter.notifyDataSetChanged()
 
                 infoLabel.visibility = View.VISIBLE
                 infoLabel.text = "Znaleziono ${result.size} słów"
@@ -467,10 +481,67 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun colorWordBlanks(word: String, rack: IntArray): CharSequence {
+
+        val temp = rack.copyOf()
+        val spannable = android.text.SpannableString(word)
+
+        val blankIndex = POLISH_LETTERS.length
+
+        for (i in word.indices) {
+
+            val c = word[i]
+            val idx = POLISH_LETTERS.indexOf(c)
+
+            val usedFromLetterPool = idx != -1 && temp[idx] > 0
+
+            if (usedFromLetterPool) {
+                temp[idx]--
+            } else if (temp[blankIndex] > 0) {
+                // ❗ litera pochodzi z blanka
+                temp[blankIndex]--
+
+                spannable.setSpan(
+                    android.text.style.ForegroundColorSpan(0xFFFF0000.toInt()),
+                    i,
+                    i + 1,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            } else {
+                // ❗ nie powinno się zdarzyć (bez liter)
+                spannable.setSpan(
+                    android.text.style.ForegroundColorSpan(0xFFFF0000.toInt()),
+                    i,
+                    i + 1,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
+
+        return spannable
+    }
+
+    private fun buildRack(input: String): IntArray {
+        val rack = IntArray(POLISH_LETTERS.length + 1)
+
+        for (c in input) {
+            if (c == '?') {
+                rack[POLISH_LETTERS.length]++
+            } else {
+                val idx = POLISH_LETTERS.indexOf(c)
+                if (idx != -1) {
+                    rack[idx]++
+                }
+            }
+        }
+        return rack
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         executorService.shutdown()
         adView.destroy()
     }
 }
+
 
