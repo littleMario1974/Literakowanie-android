@@ -97,6 +97,20 @@ class MainActivity : AppCompatActivity() {
         startFilter = findViewById(R.id.startFilter)
         containsFilter = findViewById(R.id.containsFilter)
         endFilter = findViewById(R.id.endFilter)
+
+        val noSuggestions =
+            android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
+                    android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+        startFilter.inputType = noSuggestions
+        containsFilter.inputType = noSuggestions
+        endFilter.inputType = noSuggestions
+
+        startFilter.isAllCaps = false
+        containsFilter.isAllCaps = false
+        endFilter.isAllCaps = false
+
         minLengthField = findViewById(R.id.minLength)
         maxLengthField = findViewById(R.id.maxLength)
 
