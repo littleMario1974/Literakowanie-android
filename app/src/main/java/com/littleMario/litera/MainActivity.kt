@@ -230,11 +230,10 @@ class MainActivity : AppCompatActivity() {
                     colorWordBlanks(word, rack)
                 }
 
-                adapter.clear()
+                val grouped = groupWordsByLength(colored)
 
-                for (item in colored) {
-                    adapter.add(item)
-                }
+                adapter.clear()
+                adapter.addAll(grouped)
 
                 adapter.notifyDataSetChanged()
 
@@ -243,6 +242,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun groupWordsByLength(words: List<CharSequence>): List<CharSequence> {
+
+        val map = words.groupBy { it.toString().length }
+            .toSortedMap(compareByDescending { it })
+
+        val result = mutableListOf<CharSequence>()
+
+        for ((length, list) in map) {
+
+            // HEADER (większy efekt niż zwykły tekst)
+            val header = SpannableString("\uD83D\uDCCC $length-literowe")
+            result.add(header)
+
+            // WORDS
+            result.addAll(list.sortedBy { it.toString() })
+        }
+
+        return result
+    }
+
 
     // ================= WEBVIEW FIX =================
     private fun openDictionary(word: String) {
