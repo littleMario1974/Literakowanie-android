@@ -21,7 +21,6 @@ import java.util.*
 import java.util.concurrent.Executors
 import android.graphics.Color
 import android.view.ViewGroup
-import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
 
