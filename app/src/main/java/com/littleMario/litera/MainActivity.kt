@@ -611,6 +611,16 @@ wordList.adapter = adapter
 private fun refreshListColors() {
     adapter.notifyDataSetChanged()
 }
+
+override fun onResume() {
+    super.onResume()
+
+    setThemeColors()
+
+    if (::adapter.isInitialized) {
+        adapter.notifyDataSetChanged()
+    }
+}
     
     override fun onDestroy() {
         super.onDestroy()
