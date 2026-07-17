@@ -617,10 +617,6 @@ wordList.adapter = adapter
         return rack
     }
 
-private fun refreshListColors() {
-    adapter.notifyDataSetChanged()
-}
-
 override fun onResume() {
     super.onResume()
 
