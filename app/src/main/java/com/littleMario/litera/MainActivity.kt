@@ -611,7 +611,8 @@ override fun onResume() {
     if (::adapter.isInitialized) {
         adapter.notifyDataSetChanged()
     }
-}   // <-- BRAKUJE TEGO
+}
+
 
 private fun closeDictionary() {
 
