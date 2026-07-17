@@ -630,10 +630,10 @@ private fun closeDictionary() {
     webContainer.visibility = View.GONE
     webView.loadUrl("about:blank")
 }
- 
-}
-    
-    override fun onDestroy() {
+
+
+override fun onDestroy() {
+
     if (::webView.isInitialized) {
         webView.destroy()
     }
@@ -645,6 +645,8 @@ private fun closeDictionary() {
     if (::adView.isInitialized) {
         adView.destroy()
     }
+}
+
 }
 
 
