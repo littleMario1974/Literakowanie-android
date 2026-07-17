@@ -166,10 +166,15 @@ class MainActivity : AppCompatActivity() {
 wordList.adapter = adapter
 
         wordList.setOnItemClickListener { _, _, position, _ ->
-            adapter.getItem(position)?.let { spannable ->
-                openDictionary(spannable.toString())
-            }
-        }
+
+    val text = adapter.getItem(position).toString()
+
+    if (text.startsWith("📌")) {
+        return@setOnItemClickListener
+    }
+
+    openDictionary(text)
+}
 
         adView.loadAd(AdRequest.Builder().build())
 
