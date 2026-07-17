@@ -623,10 +623,14 @@ override fun onResume() {
 }
     
     override fun onDestroy() {
-        super.onDestroy()
-        executorService.shutdown()
+    super.onDestroy()
+
+    executorService.shutdown()
+
+    if (::adView.isInitialized) {
         adView.destroy()
     }
+}
 }
 
 
