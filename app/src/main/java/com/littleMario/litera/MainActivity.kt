@@ -324,13 +324,13 @@ wordList.adapter = adapter
         webContainer.visibility = View.GONE
         webView.loadUrl("about:blank")
     }
-    override fun onBackPressed() {
-        if (webContainer.visibility == View.VISIBLE) {
-            closeDictionary()
-        } else {
-            super.onBackPressed()
-        }
+    onBackPressedDispatcher.addCallback(this) {
+    if (webContainer.visibility == View.VISIBLE) {
+        closeDictionary()
+    } else {
+        finish()
     }
+}
 
     // ================= LOAD =================
     private fun loadDatabaseFromFile() {
