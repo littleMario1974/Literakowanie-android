@@ -611,6 +611,25 @@ override fun onResume() {
     if (::adapter.isInitialized) {
         adapter.notifyDataSetChanged()
     }
+
+
+ private fun closeDictionary() {
+
+        showDescriptionButton.visibility = View.VISIBLE
+        closeButton.visibility = View.VISIBLE
+
+        webContainer.visibility = View.GONE
+        webView.loadUrl("about:blank")
+    }
+    onBackPressedDispatcher.addCallback(this) {
+    if (webContainer.visibility == View.VISIBLE) {
+        closeDictionary()
+    } else {
+        finish()
+    }
+}
+
+    
 }
     
     override fun onDestroy() {
