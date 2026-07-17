@@ -630,18 +630,7 @@ private fun closeDictionary() {
     webContainer.visibility = View.GONE
     webView.loadUrl("about:blank")
 }
- private fun closeDictionary() {
-
-        showDescriptionButton.visibility = View.VISIBLE
-        closeButton.visibility = View.VISIBLE
-
-        webContainer.visibility = View.GONE
-        webView.loadUrl("about:blank")
-    }
-   
-}
-
-    
+ 
 }
     
     override fun onDestroy() {
