@@ -611,8 +611,16 @@ override fun onResume() {
     if (::adapter.isInitialized) {
         adapter.notifyDataSetChanged()
     }
+}   // <-- BRAKUJE TEGO
 
+private fun closeDictionary() {
 
+    showDescriptionButton.visibility = View.VISIBLE
+    closeButton.visibility = View.VISIBLE
+
+    webContainer.visibility = View.GONE
+    webView.loadUrl("about:blank")
+}
  private fun closeDictionary() {
 
         showDescriptionButton.visibility = View.VISIBLE
