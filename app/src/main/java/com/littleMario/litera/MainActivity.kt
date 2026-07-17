@@ -148,14 +148,23 @@ class MainActivity : AppCompatActivity() {
         val textView = view.findViewById<TextView>(android.R.id.text1)
 
         val isPowerSave =
-            (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
+    (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
 
-        textView.setTextColor(
-            if (isPowerSave)
-                Color.WHITE
-            else
-                Color.BLACK
-        )
+val nightMode =
+    resources.configuration.uiMode and
+            android.content.res.Configuration.UI_MODE_NIGHT_MASK
+
+textView.setTextColor(
+    when {
+        isPowerSave -> Color.WHITE
+
+        nightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES ->
+            Color.WHITE
+
+        else ->
+            Color.BLACK
+    }
+)
 
         return view
     }
