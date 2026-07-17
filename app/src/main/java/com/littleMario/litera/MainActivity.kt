@@ -630,12 +630,7 @@ private fun closeDictionary() {
         webContainer.visibility = View.GONE
         webView.loadUrl("about:blank")
     }
-    onBackPressedDispatcher.addCallback(this) {
-    if (webContainer.visibility == View.VISIBLE) {
-        closeDictionary()
-    } else {
-        finish()
-    }
+   
 }
 
     
