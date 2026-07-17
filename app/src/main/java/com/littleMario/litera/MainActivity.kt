@@ -124,8 +124,6 @@ class MainActivity : AppCompatActivity() {
         webContainer = findViewById(R.id.webContainer)
         webView = findViewById(R.id.webView)
         closeWebViewButton = findViewById(R.id.closeWebViewButton)
-        webProgress = findViewById(R.id.webProgress)
-        webProgress.visibility = View.GONE
 
         webView.settings.javaScriptEnabled = false
         webView.settings.domStorageEnabled = false
