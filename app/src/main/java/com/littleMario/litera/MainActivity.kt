@@ -619,12 +619,7 @@ wordList.adapter = adapter
 
 override fun onResume() {
     super.onResume()
-
     setThemeColors()
-
-    if (::adapter.isInitialized) {
-        adapter.notifyDataSetChanged()
-    }
 }
     
     override fun onDestroy() {
