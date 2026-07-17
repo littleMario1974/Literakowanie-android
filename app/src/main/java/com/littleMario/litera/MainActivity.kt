@@ -623,6 +623,10 @@ override fun onResume() {
 }
     
     override fun onDestroy() {
+    if (::webView.isInitialized) {
+        webView.destroy()
+    }
+
     super.onDestroy()
 
     executorService.shutdown()
@@ -630,7 +634,6 @@ override fun onResume() {
     if (::adView.isInitialized) {
         adView.destroy()
     }
-}
 }
 
 
