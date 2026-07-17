@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var endFilter: EditText
     private lateinit var minLengthField: EditText
     private lateinit var maxLengthField: EditText
-    private lateinit var webProgress: ProgressBar
     private var isEditing = false
 
     // WEBVIEW FIX
