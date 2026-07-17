@@ -472,7 +472,8 @@ wordList.adapter = adapter
         return false
     }
 
-    private fun setThemeColors() {
+   private fun setThemeColors() {
+
     val isPowerSave =
         (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
 
@@ -483,6 +484,10 @@ wordList.adapter = adapter
             else
                 R.drawable.background
         )
+
+    if (::adapter.isInitialized) {
+        adapter.notifyDataSetChanged()
+    }
 }
 
     private fun setupLetterFilter(editText: EditText, maxBlanks: Int = Int.MAX_VALUE) {
