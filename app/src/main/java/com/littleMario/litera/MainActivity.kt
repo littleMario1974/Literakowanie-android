@@ -471,17 +471,19 @@ wordList.adapter = adapter
     }
 
     private fun setThemeColors() {
-        val isPowerSave =
-            (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
+    val isPowerSave =
+        (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
 
-        findViewById<ConstraintLayout>(R.id.mainLayout)
-            .setBackgroundResource(
-                if (isPowerSave)
-                    R.drawable.background_energysaver
-                else
-                    R.drawable.background
-            )
-    }
+    findViewById<ConstraintLayout>(R.id.mainLayout)
+        .setBackgroundResource(
+            if (isPowerSave)
+                R.drawable.background_energysaver
+            else
+                R.drawable.background
+        )
+
+    adapter.notifyDataSetChanged()
+}
 
     private fun setupLetterFilter(editText: EditText, maxBlanks: Int = Int.MAX_VALUE) {
 
