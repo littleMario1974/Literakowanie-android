@@ -483,8 +483,6 @@ wordList.adapter = adapter
             else
                 R.drawable.background
         )
-
-    adapter.notifyDataSetChanged()
 }
 
     private fun setupLetterFilter(editText: EditText, maxBlanks: Int = Int.MAX_VALUE) {
