@@ -128,9 +128,17 @@ class MainActivity : AppCompatActivity() {
         webView.settings.javaScriptEnabled = false
         webView.settings.domStorageEnabled = false
         webView.webViewClient = WebViewClient()
-        closeWebViewButton.setOnClickListener {
-            closeDictionary()
-        }
+       closeWebViewButton.setOnClickListener {
+    closeDictionary()
+}
+
+onBackPressedDispatcher.addCallback(this) {
+    if (webContainer.visibility == View.VISIBLE) {
+        closeDictionary()
+    } else {
+        finish()
+    }
+}
 
         adapter = object : ArrayAdapter<CharSequence>(
     this,
