@@ -19,6 +19,9 @@ import com.google.android.gms.ads.*
 import java.io.DataInputStream
 import java.util.*
 import java.util.concurrent.Executors
+import android.graphics.Color
+import android.view.ViewGroup
+import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
 
@@ -133,8 +136,36 @@ class MainActivity : AppCompatActivity() {
             closeDictionary()
         }
 
-        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
-        wordList.adapter = adapter
+        adapter = object : ArrayAdapter<CharSequence>(
+    this,
+    android.R.layout.simple_list_item_1,
+    mutableListOf()
+) {
+    override fun getView(
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup
+    ): View {
+
+        val view = super.getView(position, convertView, parent)
+
+        val textView = view.findViewById<TextView>(android.R.id.text1)
+
+        val isPowerSave =
+            (getSystemService(POWER_SERVICE) as PowerManager).isPowerSaveMode
+
+        textView.setTextColor(
+            if (isPowerSave)
+                Color.WHITE
+            else
+                Color.BLACK
+        )
+
+        return view
+    }
+}
+
+wordList.adapter = adapter
 
         wordList.setOnItemClickListener { _, _, position, _ ->
             adapter.getItem(position)?.let { spannable ->
