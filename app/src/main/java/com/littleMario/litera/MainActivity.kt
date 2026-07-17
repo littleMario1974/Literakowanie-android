@@ -21,6 +21,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import android.graphics.Color
 import android.view.ViewGroup
+import androidx.activity.addCallback
 
 class MainActivity : AppCompatActivity() {
 
@@ -638,13 +639,13 @@ override fun onDestroy() {
         webView.destroy()
     }
 
-    super.onDestroy()
-
     executorService.shutdown()
 
     if (::adView.isInitialized) {
         adView.destroy()
     }
+
+    super.onDestroy()
 }
 
 }
