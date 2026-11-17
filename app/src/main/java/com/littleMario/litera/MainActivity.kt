@@ -59,13 +59,18 @@ class MainActivity : AppCompatActivity() {
     private val POLISH_LETTERS =
         "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż"
 
-    // ================= FILTRY =================
-    private var startsWithPattern = ""
-    private var endsWithPattern = ""
-    private var containsPattern = ""
+    // Parametry są kopiowane dla każdego wyszukiwania, aby zadania nie
+    // współdzieliły filtrów zmienianych przez użytkownika.
+    private data class SearchConfig(
+        val startsWithPattern: String,
+        val endsWithPattern: String,
+        val containsPattern: String,
+        val minLength: Int,
+        val maxLength: Int
+    )
 
-    private var minLength = 2
-    private var maxLength = 50
+    // Zmieniany wyłącznie z wątku UI.
+    private var latestSearchId = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -194,6 +199,7 @@ wordList.adapter = adapter
 
         clearButton.setOnClickListener {
 
+            latestSearchId++
             inputField.setText("")
             startFilter.setText("")
             containsFilter.setText("")
@@ -243,36 +249,37 @@ wordList.adapter = adapter
     // ================= SEARCH =================
     private fun searchWords(input: String) {
 
-        startsWithPattern = startFilter.text.toString().trim().lowercase()
-        endsWithPattern = endFilter.text.toString().trim().lowercase()
-        containsPattern = containsFilter.text.toString().trim().lowercase()
+        // Każde zadanie dostaje własną, niezmienną kopię parametrów.
+        val config = SearchConfig(
+            startsWithPattern = startFilter.text.toString().trim().lowercase(Locale.getDefault()),
+            endsWithPattern = endFilter.text.toString().trim().lowercase(Locale.getDefault()),
+            containsPattern = containsFilter.text.toString().trim().lowercase(Locale.getDefault()),
+            minLength = minLengthField.text.toString().toIntOrNull() ?: 2,
+            maxLength = maxLengthField.text.toString().toIntOrNull() ?: 50
+        )
+        val normalizedInput = input.lowercase(Locale.getDefault())
 
-        minLength = minLengthField.text.toString().toIntOrNull() ?: 2
-        maxLength = maxLengthField.text.toString().toIntOrNull() ?: 50
-
-        if (minLength > maxLength) {
+        if (config.minLength > config.maxLength) {
             Toast.makeText(this, "Błąd długości", Toast.LENGTH_SHORT).show()
             return
         }
 
-        executorService.submit {
+        val searchId = ++latestSearchId
 
-            val result = findAllWords(input.lowercase(Locale.getDefault()))
+        executorService.submit {
+            val result = findAllWords(normalizedInput, config)
 
             runOnUiThread {
-                if (isFinishing) return@runOnUiThread
-
-                val rack = buildRack(input.lowercase(Locale.getDefault()))
-
-                val colored = result.map { word ->
-                    colorWordBlanks(word, rack)
+                if (isFinishing || isDestroyed || searchId != latestSearchId) {
+                    return@runOnUiThread
                 }
 
+                val rack = buildRack(normalizedInput)
+                val colored = result.map { word -> colorWordBlanks(word, rack) }
                 val grouped = groupWordsByLength(colored)
 
                 adapter.clear()
                 adapter.addAll(grouped)
-
                 adapter.notifyDataSetChanged()
 
                 infoLabel.visibility = View.VISIBLE
@@ -338,7 +345,7 @@ wordList.adapter = adapter
     }
 
     // ================= DFS =================
-    private fun findAllWords(input: String): List<String> {
+    private fun findAllWords(input: String, config: SearchConfig): List<String> {
 
         val rack = IntArray(POLISH_LETTERS.length + 1)
 
@@ -351,7 +358,7 @@ wordList.adapter = adapter
         }
 
         val result = mutableSetOf<String>()
-        dfsFast(rootId, StringBuilder(), rack, result)
+        dfsFast(rootId, StringBuilder(), rack, result, config)
 
         return result.sortedByDescending { it.length }
     }
@@ -360,19 +367,20 @@ wordList.adapter = adapter
         nodeId: Int,
         path: StringBuilder,
         rack: IntArray,
-        result: MutableSet<String>
+        result: MutableSet<String>,
+        config: SearchConfig
     ) {
         val node = nodes[nodeId]
 
         // ❌ PRUNING: jeśli już za długie → stop
-        if (path.length > maxLength) return
+        if (path.length > config.maxLength) return
 
         // ✔ sprawdzenie słowa TYLKO gdy w zakresie
         if (node.terminal) {
             val len = path.length
-            if (len in minLength..maxLength) {
+            if (len in config.minLength..config.maxLength) {
                 val word = path.toString()
-                if (matchesFilters(word)) {
+                if (matchesFilters(word, config)) {
                     result.add(word)
                 }
             }
@@ -396,7 +404,7 @@ wordList.adapter = adapter
                 rack[i]--
                 path.append(letter)
 
-                dfsFast(child, path, rack, result)
+                dfsFast(child, path, rack, result, config)
 
                 path.deleteCharAt(path.length - 1)
                 rack[i]++
@@ -404,7 +412,7 @@ wordList.adapter = adapter
                 rack[blankIndex]--
                 path.append(letter)
 
-                dfsFast(child, path, rack, result)
+                dfsFast(child, path, rack, result, config)
 
                 path.deleteCharAt(path.length - 1)
                 rack[blankIndex]++
@@ -413,18 +421,18 @@ wordList.adapter = adapter
     }
 
     // ================= FILTRY =================
-    private fun matchesFilters(word: String): Boolean {
+    private fun matchesFilters(word: String, config: SearchConfig): Boolean {
 
-        if (word.length !in minLength..maxLength) return false
+        if (word.length !in config.minLength..config.maxLength) return false
 
-        if (startsWithPattern.isNotEmpty())
-            if (!matchPattern(word, startsWithPattern, true)) return false
+        if (config.startsWithPattern.isNotEmpty())
+            if (!matchPattern(word, config.startsWithPattern, true)) return false
 
-        if (endsWithPattern.isNotEmpty())
-            if (!matchPattern(word, endsWithPattern, false)) return false
+        if (config.endsWithPattern.isNotEmpty())
+            if (!matchPattern(word, config.endsWithPattern, false)) return false
 
-        if (containsPattern.isNotEmpty())
-            if (!containsWildcardAnywhere(word, containsPattern)) return false
+        if (config.containsPattern.isNotEmpty())
+            if (!containsWildcardAnywhere(word, config.containsPattern)) return false
 
         return true
     }
