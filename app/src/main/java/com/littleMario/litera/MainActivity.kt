@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var nodes: Array<Node>
     private val rootId = 0
+    private val MAX_RACK_LETTERS = 15
 
     private lateinit var inputField: EditText
     private lateinit var wordList: ListView
@@ -121,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         minLengthField = findViewById(R.id.minLength)
         maxLengthField = findViewById(R.id.maxLength)
 
-        setupLetterFilter(inputField, maxBlanks = 2)
+        setupLetterFilter(inputField, maxBlanks = 2, maxLength = MAX_RACK_LETTERS)
         setupLetterFilter(startFilter)
         setupLetterFilter(containsFilter)
         setupLetterFilter(endFilter)
@@ -516,9 +517,14 @@ private fun setThemeColors() {
 }
 
 
-    private fun setupLetterFilter(editText: EditText, maxBlanks: Int = Int.MAX_VALUE) {
+    private fun setupLetterFilter(
+        editText: EditText,
+        maxBlanks: Int = Int.MAX_VALUE,
+        maxLength: Int = Int.MAX_VALUE
+    ) {
 
         editText.filters = arrayOf(
+            android.text.InputFilter.LengthFilter(maxLength),
             android.text.InputFilter { source, _, _, _, _, _ ->
                 val allowed = POLISH_LETTERS + "?"
 
