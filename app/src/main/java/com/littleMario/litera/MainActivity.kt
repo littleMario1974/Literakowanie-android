@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var nodes: Array<Node>
     private val rootId = 0
-    private val MAX_RACK_LETTERS = 15
+    private val MAX_RACK_LETTERS = 50
 
     private lateinit var inputField: EditText
     private lateinit var wordList: ListView
