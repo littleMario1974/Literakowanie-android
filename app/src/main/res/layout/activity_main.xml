@@ -47,7 +47,7 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_margin="16dp"
-    android:hint="twoje litery (maks. 15)"
+    android:hint="twoje litery (maks. 50)"
     android:inputType="textVisiblePassword"
     android:textColor="#000000"
     android:textColorHint="#757575"
