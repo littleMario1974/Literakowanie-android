@@ -524,21 +524,32 @@ private fun setThemeColors() {
     ) {
 
         editText.filters = arrayOf(
-            android.text.InputFilter.LengthFilter(maxLength),
-            android.text.InputFilter { source, _, _, _, _, _ ->
+            android.text.InputFilter { source, _, _, dest, dstart, dend ->
                 val allowed = POLISH_LETTERS + "?"
 
-                if (source.all { it.lowercaseChar() in allowed }) {
-                    source
-                } else {
+                if (!source.all { it.lowercaseChar() in allowed }) {
                     Toast.makeText(
                         this,
                         "Niedozwolony znak",
                         Toast.LENGTH_SHORT
                     ).show()
                     ""
+                } else {
+                    val resultingLength =
+                        dest.length - (dend - dstart) + source.length
+
+                    if (maxLength != Int.MAX_VALUE && resultingLength > maxLength) {
+                        Toast.makeText(
+                            this,
+                            "Maksymalnie $maxLength liter",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    source
                 }
-            }
+            },
+            android.text.InputFilter.LengthFilter(maxLength)
         )
 
         editText.addTextChangedListener(object : TextWatcher {
