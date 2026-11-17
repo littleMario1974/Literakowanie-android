@@ -13,3 +13,15 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Android build outputs and generated packages
+**/build/
+*.apk
+*.aab
+
+# IntelliJ / Android Studio shelved changes
+.idea/shelf/
+
+# JVM crash logs and heap dumps
+hs_err_pid*.log
+*.hprof
