@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Aplikacja korzysta z HTTPS; zwykły HTTP pozostaje zablokowany. -->
-    <base-config cleartextTrafficPermitted="false" />
+    <!-- Zezwól na HTTP, aby WebView mógł otwierać także odnośniki ze słownika. -->
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>
