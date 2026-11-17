@@ -225,6 +225,9 @@ wordList.adapter = adapter
 
             val input = inputField.text.toString()
             if (input.isBlank()) {
+                // Puste nowe żądanie nie może pozwolić staremu zadaniu
+                // na późniejsze przywrócenie wyników.
+                latestSearchId++
                 Toast.makeText(this, "Wpisz litery", Toast.LENGTH_SHORT).show()
             } else {
                 searchWords(input)
@@ -259,12 +262,14 @@ wordList.adapter = adapter
         )
         val normalizedInput = input.lowercase(Locale.getDefault())
 
+        // Nowe żądanie unieważnia poprzednie również wtedy, gdy jego
+        // własne parametry okażą się niepoprawne.
+        val searchId = ++latestSearchId
+
         if (config.minLength > config.maxLength) {
             Toast.makeText(this, "Błąd długości", Toast.LENGTH_SHORT).show()
             return
         }
-
-        val searchId = ++latestSearchId
 
         executorService.submit {
             val result = findAllWords(normalizedInput, config)
