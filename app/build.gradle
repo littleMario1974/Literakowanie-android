@@ -37,11 +37,6 @@ android {
         }
     }
 
-    android {
-        buildFeatures {
-            viewBinding true
-        }
-    }
 }
 
 dependencies {
@@ -58,6 +53,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest"
 
     implementation "androidx.appcompat:appcompat:1.7.1"
+    implementation "androidx.constraintlayout:constraintlayout:2.2.1"
     implementation "com.google.android.material:material:1.12.0"
 
     implementation "com.google.android.gms:play-services-ads:24.3.0"
