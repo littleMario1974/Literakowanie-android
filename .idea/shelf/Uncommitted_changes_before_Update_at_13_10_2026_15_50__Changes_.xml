@@ -1,9 +1,0 @@
-<changelist name="Uncommitted_changes_before_Update_at_13_10_2026_15_50_[Changes]" date="1791899457499" recycled="true" deleted="true">
-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_13_10_2026_15_50_[Changes]/shelved.patch" />
-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 13.10.2026 15:50 [Changes]" />
-  <binary>
-    <option name="BEFORE_PATH" value="app/release/app-release.aab" />
-    <option name="AFTER_PATH" value="app/release/app-release.aab" />
-    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_13_10_2026_15_50_[Changes]/app-release.aab" />
-  </binary>
-</changelist>
